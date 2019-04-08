@@ -8,7 +8,8 @@ This repository mainly contains three Python files:
 - bbf.py Translates Brainfuck to simple bytecode and interprets it
          (with the same optimizations)
 - bf2asm.py Translates Brainfuck to Linux x86_64 Assembler (NASM syntax)
-            source files
+            source files (same optimizations + one for more readable asm
+            source)
 
 ## Speed
 
@@ -16,4 +17,6 @@ With my AMD FX-8800 the file bf_source/bench1.bf took the following times:
 
 - bf.py ~340s
 - bbf.py ~140s
-- bf2asm.py 0.10s (the compiled and linked binary)
+- bf2asm.py ~0.10s (the compiled and linked binary)
+
+The Python code is not commented yet. I will add it in the future.
