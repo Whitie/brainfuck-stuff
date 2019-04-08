@@ -102,3 +102,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# object files
+*.o
+# brainfuck optimized files
+*.bfo
+# brainfuck bytecode files
+*.bfc
+# binaries
+bin/*
