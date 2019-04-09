@@ -3,16 +3,11 @@
 
 import os
 import re
-import sys
 
 from argparse import ArgumentParser
 from functools import partial
 
 
-MOVE_RE = re.compile(r'[<>]{2,}')
-INC_DEC_RE = re.compile(r'[+-]{2,}')
-CLEAR_LOOP_RE = re.compile(r'\[(\+|\-)\]')
-START_COMMENT_RE = re.compile(r'^\[.+?\]', re.DOTALL)
 BF_COMMANDS = {
     'MOVE_RIGHT': '>',
     'MOVE_LEFT':  '<',
@@ -44,6 +39,14 @@ section .data
 section .text
     global _start
 
+_start:
+    mov rsi, tape
+{generated_code}
+    xor rdi, rdi
+    mov rax, SYS_EXIT
+    syscall
+
+; Helper subroutines
 putc:
     mov rdi, STDOUT
     mov rdx, INPUT_OUTPUT_SIZE
@@ -78,12 +81,6 @@ cl_loop:
     ret
 
 {binc}
-_start:
-    mov rsi, tape
-{generated_code}
-    xor rdi, rdi
-    mov rax, SYS_EXIT
-    syscall
 """
 BINC = """\
 back_inc:
@@ -122,19 +119,27 @@ def _asm_post_optimize(code, commands):
 
 def optimize(code, commands):
     cl = len(code)
-    print('Cleaned code length:', cl, file=sys.stderr)
+    print('Cleaned code length:', cl)
     code = _asm_pre_optimize(code, commands)
-    code = INC_DEC_RE.sub(
+    code = re.sub(
+        r'[{INCREMENT}{DECREMENT}]{{2,}}'.format(**commands),
         partial(balance, inc=commands['INCREMENT'], dec=commands['DECREMENT']),
         code
     )
-    code = MOVE_RE.sub(
+    code = re.sub(
+        r'[{MOVE_LEFT}{MOVE_RIGHT}]{{2,}}'.format(**commands),
         partial(balance, inc=commands['MOVE_RIGHT'],
                 dec=commands['MOVE_LEFT']),
         code
     )
-    code = CLEAR_LOOP_RE.sub('%', code)
-    code = START_COMMENT_RE.sub('', code)
+    code = re.sub(
+        r'\{LOOP_START}(\{INCREMENT}|\{DECREMENT})\{LOOP_END}'.format(
+            **commands
+        ),
+        '%', code
+    )
+    code = re.sub(r'^\{LOOP_START}.+?\{LOOP_END}'.format(**commands), '',
+                  code, flags=re.DOTALL)
     lookup = {
         'I': commands['INCREMENT'],
         'D': commands['DECREMENT'],
@@ -147,9 +152,9 @@ def optimize(code, commands):
     code = _asm_post_optimize(code, commands)
     ocl = len(code)
     if cl == ocl:
-        print('No optimization found', file=sys.stderr)
+        print('No optimization found')
     else:
-        print('Optimized code length:', ocl, file=sys.stderr)
+        print('Optimized code length:', ocl)
     return code
 
 
