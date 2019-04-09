@@ -6,10 +6,9 @@ This repository mainly contains three Python files:
 
 - bf.py Brainfuck interpreter (with some optimizations)
 - bbf.py Translates Brainfuck to simple bytecode and interprets it
-         (with the same optimizations)
+  (with the same optimizations)
 - bf2asm.py Translates Brainfuck to Linux x86_64 Assembler (NASM syntax)
-            source files (same optimizations + one for more readable asm
-            source)
+  source files (same optimizations + one for more readable asm source)
 
 ## Speed
 
