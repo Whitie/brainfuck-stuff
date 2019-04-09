@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import re
 
 from argparse import ArgumentParser
 from functools import partial
+from pathlib import Path
 
 
 BF_COMMANDS = {
@@ -161,11 +161,13 @@ def optimize(code, commands):
 class Brainfuck:
 
     def __init__(self, filename, asm_filename=None, **commands):
-        self.filename = filename
-        self.executable = os.path.splitext(filename)[0]
-        self.asm_filename = asm_filename or '{}.asm'.format(self.executable)
-        with open(filename) as fp:
-            code = fp.read()
+        self.filename = Path(filename)
+        self.executable = Path(self.filename.stem)
+        if asm_filename is not None:
+            self.asm_filename = Path(asm_filename)
+        else:
+            self.asm_filename = Path('{}.asm'.format(self.executable))
+        code = self.filename.read_text()
         self.commands = BF_COMMANDS.copy()
         self.commands.update(commands)
         self.cleaned_code = self._clean_code(code)
@@ -201,14 +203,13 @@ class Brainfuck:
         while self.pc < len(self.code):
             instruction = self.code[self.pc]
             self.process_instruction(instruction)
-        with open(self.asm_filename, 'w') as fp:
-            fp.write(
-                ASM_HEADER.format(
-                    filename=self.executable.split('/')[-1],
-                    generated_code='\n'.join(self.asm),
-                    binc=binc
-                )
+        self.asm_filename.write_text(
+            ASM_HEADER.format(
+                filename=self.executable.stem,
+                generated_code='\n'.join(self.asm),
+                binc=binc
             )
+        )
         print('Assembler source written to', self.asm_filename)
 
     def process_instruction(self, instruction):
