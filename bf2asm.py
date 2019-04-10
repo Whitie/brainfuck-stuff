@@ -151,7 +151,7 @@ def optimize(code, commands):
         code = re.sub(sym_re, partial(aggregate, sym=sym), code)
     code = _asm_post_optimize(code, commands)
     ocl = len(code)
-    if cl == ocl:
+    if cl <= ocl:
         print('No optimization found')
     else:
         print('Optimized code length:', ocl)

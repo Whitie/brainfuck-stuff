@@ -13,10 +13,6 @@ from struct import pack, unpack
 
 DATASIZE = 30000
 MAX_NESTING_LEVELS = 100
-MOVE_RE = re.compile(r'[<>]{2,}')
-INC_DEC_RE = re.compile(r'[+-]{2,}')
-CLEAR_LOOP_RE = re.compile(r'\[(\+|\-)\]')
-START_COMMENT_RE = re.compile(r'^\[.+?\]', re.DOTALL)
 BF_COMMANDS = {
     'MOVE_RIGHT': '>',
     'MOVE_LEFT':  '<',
@@ -56,18 +52,26 @@ def aggregate(match, sym):
 
 def optimize(code, commands):
     cl = len(code)
-    print('Cleaned code length:', cl, file=sys.stderr)
-    code = INC_DEC_RE.sub(
+    print('Cleaned code length:', cl)
+    code = re.sub(
+        r'[{INCREMENT}{DECREMENT}]{{2,}}'.format(**commands),
         partial(balance, inc=commands['INCREMENT'], dec=commands['DECREMENT']),
         code
     )
-    code = MOVE_RE.sub(
+    code = re.sub(
+        r'[{MOVE_LEFT}{MOVE_RIGHT}]{{2,}}'.format(**commands),
         partial(balance, inc=commands['MOVE_RIGHT'],
                 dec=commands['MOVE_LEFT']),
         code
     )
-    code = CLEAR_LOOP_RE.sub('%', code)
-    code = START_COMMENT_RE.sub('', code)
+    code = re.sub(
+        r'\{LOOP_START}(\{INCREMENT}|\{DECREMENT})\{LOOP_END}'.format(
+            **commands
+        ),
+        '%', code
+    )
+    code = re.sub(r'^\{LOOP_START}.+?\{LOOP_END}'.format(**commands), '',
+                  code, flags=re.DOTALL)
     lookup = {
         'I': commands['INCREMENT'],
         'D': commands['DECREMENT'],
@@ -77,11 +81,11 @@ def optimize(code, commands):
     for sym, instruction in lookup.items():
         sym_re = r'{}{{2,}}'.format(re.escape(instruction))
         code = re.sub(sym_re, partial(aggregate, sym=sym), code)
-    ocl = len(code) - code.count('0')
-    if cl == ocl:
-        print('No optimization found', file=sys.stderr)
+    ocl = len(code)
+    if cl <= ocl:
+        print('No optimization found')
     else:
-        print('Optimized code length:', ocl, file=sys.stderr)
+        print('Optimized code length:', ocl)
     return code
 
 
