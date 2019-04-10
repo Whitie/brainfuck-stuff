@@ -1,4 +1,4 @@
-; Translated with bf2asm.py from code.bf
+; Translated with bf2asm.py from code.b
 ; Compile with: nasm -f elf64 code.asm
 ; Link with: ld code.o -o code
 %define SYS_READ 0

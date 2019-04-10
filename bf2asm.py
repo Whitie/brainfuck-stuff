@@ -19,7 +19,7 @@ BF_COMMANDS = {
     'LOOP_END':   ']',
 }
 ASM_HEADER = """\
-; Translated with bf2asm.py from {filename}.bf
+; Translated with bf2asm.py from {filename}{suffix}
 ; Compile with: nasm -f elf64 {filename}.asm
 ; Link with: ld {filename}.o -o {filename}
 %define SYS_READ 0
@@ -206,6 +206,7 @@ class Brainfuck:
         self.asm_filename.write_text(
             ASM_HEADER.format(
                 filename=self.executable.stem,
+                suffix=self.filename.suffix,
                 generated_code='\n'.join(self.asm),
                 binc=binc
             )

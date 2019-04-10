@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import sys
 import time
 
 from argparse import ArgumentParser
@@ -27,8 +28,11 @@ def create_directories(args):
 def translate(bf_source, destdir):
     tmp = '{}.asm'.format(bf_source.stem)
     asm_file = destdir / tmp
+    _sys_stdout = sys.stdout
+    sys.stdout = open('/dev/null', 'w')
     bf = Brainfuck(bf_source, asm_file)
     bf.process()
+    sys.stdout = _sys_stdout
     return asm_file
 
 
