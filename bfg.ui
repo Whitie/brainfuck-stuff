@@ -71,7 +71,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="lbl_program">
         <property name="text">
          <string>Programm</string>
         </property>
@@ -135,10 +135,10 @@
          <string>ms</string>
         </property>
         <property name="maximum">
-         <number>5000</number>
+         <number>3000</number>
         </property>
         <property name="singleStep">
-         <number>500</number>
+         <number>200</number>
         </property>
        </widget>
       </item>

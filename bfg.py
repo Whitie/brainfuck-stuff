@@ -43,13 +43,14 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         self.btn_load.clicked.connect(self._load_program)
         self.btn_load_file.clicked.connect(self._load_file)
         self.btn_clear_tape.clicked.connect(self._clear_tape)
-        self.btn_stop.clicked.connect(self._stop)
-        self.btn_run.clicked.connect(self.run)
         self.btn_step.clicked.connect(self.step)
-        self.delay_ms.valueChanged.connect(self._set_delay)
         self.tape.itemChanged.connect(self._tape_edited)
         self.tape.itemDoubleClicked.connect(self._user_change)
-        self.timer = None
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.step)
+        self.delay_ms.valueChanged.connect(self.timer.setInterval)
+        self.btn_run.clicked.connect(self.timer.start)
+        self.btn_stop.clicked.connect(self.timer.stop)
         self.code = ''
         self.commands = {
             '+': (self.bf_increment, 'INCREMENT'),
@@ -67,17 +68,9 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         self.ptr = 0
         self.tape_changed_by_user = False
         self._old_value = None
-        self.stop = False
-        self.delay = 0
 
     def _show(self, message, timeout=5000):
         self.status.showMessage(message, timeout)
-
-    def _set_delay(self, value):
-        self.delay = value
-
-    def _stop(self):
-        self.stop = True
 
     def _load_file(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -169,6 +162,7 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
     def _load(self):
         self.program.clear()
         count = len(self.code)
+        self.lbl_program.setText(f'Programm ({count} Befehle)')
         self.progress.reset()
         self.progress.setRange(0, count)
         self.program.setColumnCount(count)
@@ -198,22 +192,6 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         except IndexError:
             text = 'PROGRAM END'
         self.journal.appendPlainText(text)
-        if self.timer is not None and self.timer.isActive():
-            if self.stop:
-                self.timer.stop()
-                self.timer = None
-                return
-            if self.timer.interval() != self.delay:
-                self.timer.setInterval(self.delay)
-
-    def run(self):
-        if self.delay:
-            self.timer = QtCore.QTimer(self)
-            self.timer.timeout.connect(self.step)
-            self.timer.start(self.delay)
-        else:
-            while self.pc < len(self.code) and not self.stop:
-                self.step()
 
     def _check_tape(self):
         if self.ptr >= len(self.data):
@@ -225,9 +203,7 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
             command = self.code[self.pc]
         except IndexError:
             self._show('Programm beendet')
-            if self.timer is not None:
-                self.timer.stop()
-                self.timer = None
+            self.timer.stop()
             return
         self.commands[command][0]()
         self.pc += 1
