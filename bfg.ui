@@ -40,6 +40,16 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
+       <widget class="QPushButton" name="btn_load_file">
+        <property name="toolTip">
+         <string>Brainfuck Programm aus Datei laden</string>
+        </property>
+        <property name="text">
+         <string>Aus Datei</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLineEdit" name="program_input">
         <property name="clearButtonEnabled">
          <bool>true</bool>

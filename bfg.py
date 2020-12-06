@@ -41,6 +41,7 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         self.status.addPermanentWidget(self.progress)
         self.program_input.editingFinished.connect(self._load_program)
         self.btn_load.clicked.connect(self._load_program)
+        self.btn_load_file.clicked.connect(self._load_file)
         self.btn_clear_tape.clicked.connect(self._clear_tape)
         self.btn_stop.clicked.connect(self._stop)
         self.btn_run.clicked.connect(self.run)
@@ -74,10 +75,18 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
 
     def _set_delay(self, value):
         self.delay = value
-        print(value)
 
     def _stop(self):
         self.stop = True
+
+    def _load_file(self):
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Datei öffnen', '.', 'Brainfuck Quellen (*.b *.bf)'
+        )
+        if filename:
+            with open(filename) as fp:
+                source = fp.read().strip()
+            self.program_input.setText(_strip(source, self.commands))
 
     def _clear_tape(self):
         self.data = [0] * TAPE_START_SIZE
@@ -189,8 +198,12 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         except IndexError:
             text = 'PROGRAM END'
         self.journal.appendPlainText(text)
-        if self.timer is not None:
-            if self.timer.isActive() and self.timer.interval() != self.delay:
+        if self.timer is not None and self.timer.isActive():
+            if self.stop:
+                self.timer.stop()
+                self.timer = None
+                return
+            if self.timer.interval() != self.delay:
                 self.timer.setInterval(self.delay)
 
     def run(self):
