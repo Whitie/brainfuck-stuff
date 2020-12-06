@@ -117,7 +117,10 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="delay">
+       <widget class="QSpinBox" name="delay_ms">
+        <property name="toolTip">
+         <string>Verzögerung nach jedem Schritt in Millisekunden</string>
+        </property>
         <property name="suffix">
          <string>ms</string>
         </property>
