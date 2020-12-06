@@ -235,6 +235,7 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
     def bf_write(self):
         out = chr(self.data[self.ptr])
         text = self.output.toPlainText()
+        self.output.clear()
         self.output.appendPlainText(f'{text}{out}')
 
     def bf_loop_start(self):
