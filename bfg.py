@@ -68,6 +68,7 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         self.ptr = 0
         self.tape_changed_by_user = False
         self._old_value = None
+        self.steps = 0
 
     def _show(self, message, timeout=5000):
         self.status.showMessage(message, timeout)
@@ -153,6 +154,7 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         self._stack = []
         self.pc = 0
         self.ptr = 0
+        self.steps = 0
         self._load()
         self._clear_tape()
         for box in (self.output, self.stack, self.journal):
@@ -188,9 +190,9 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
             self.stack.appendPlainText(str(addr))
         try:
             command = self.code[self.pc]
-            text = f'{self.pc+1:04d} | {self.commands[command][1]}'
+            text = f'{self.pc+1:05d} | {self.commands[command][1]}'
         except IndexError:
-            text = 'PROGRAM END'
+            text = f'PROGRAM END\n{self.steps} COMMANDS'
         self.journal.appendPlainText(text)
 
     def _check_tape(self):
@@ -202,10 +204,11 @@ class BFInterpreterGUI(QtWidgets.QMainWindow):
         try:
             command = self.code[self.pc]
         except IndexError:
-            self._show('Programm beendet')
+            self._show(f'Programm beendet, {self.steps} Befehle ausgeführt')
             self.timer.stop()
             return
         self.commands[command][0]()
+        self.steps += 1
         self.pc += 1
         self._check_tape()
         self.update_gui()
